@@ -31,7 +31,7 @@ class profiler( object ):
     #
     # kg fixme, need todo rolling window vs totals
     #
-    
+
     out = db.system.profile.aggregate([
             {"$group": 
               { "_id" :"$op",
@@ -52,7 +52,14 @@ class profiler( object ):
     lines = []
 
     for i in data:
+      # max
       str = "%s.%s.max %s %s" % ( GRAPHITE_PREFIX, i['_id'], i['max response time'], thedate)
+      lines.append(str)
+      # avg
+      str = "%s.%s.avg %s %s" % ( GRAPHITE_PREFIX, i['_id'], i['avg response time'], thedate)
+      lines.append(str)
+      # count
+      str = "%s.%s.count %s %s" % ( GRAPHITE_PREFIX, i['_id'], i['count'], thedate)
       lines.append(str)
   
     message = '\n'.join(lines) + '\n' #all lines must end in a newline
