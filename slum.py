@@ -50,17 +50,12 @@ class profiler( object ):
     self.sock.connect( (CARBON_SERVER,CARBON_PORT) )
 
     lines = []
+    metrics = [['max response time','max'],['avg response time','avg'],['count','count']]
 
     for i in data:
-      # max
-      str = "%s.%s.max %s %s" % ( GRAPHITE_PREFIX, i['_id'], i['max response time'], thedate)
-      lines.append(str)
-      # avg
-      str = "%s.%s.avg %s %s" % ( GRAPHITE_PREFIX, i['_id'], i['avg response time'], thedate)
-      lines.append(str)
-      # count
-      str = "%s.%s.count %s %s" % ( GRAPHITE_PREFIX, i['_id'], i['count'], thedate)
-      lines.append(str)
+      for m in metrics:
+        str = "%s.%s.%s %s %s" % ( GRAPHITE_PREFIX, i['_id'], m[1], i[m[0]], thedate)
+        lines.append(str)
   
     message = '\n'.join(lines) + '\n' #all lines must end in a newline
     print "sending message\n"
