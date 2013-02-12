@@ -16,6 +16,7 @@ MONGO_HOST = config.MONGO_HOST
 MONGO_PORT = config.MONGO_PORT
 MONGO_USER = config.MONGO_USER
 MONGO_PWD = config.MONGO_PWD
+MONGO_DB = config.MONGO_DB
 
 class profiler( object ):
   def __init__( self ):
@@ -26,7 +27,7 @@ class profiler( object ):
   def get_profiler_data( self ):
       
     # get profiler data
-    db = getattr( self.conn, "test" )
+    db = getattr( self.conn, MONGO_DB )
   
     #
     # kg fixme, need todo rolling window vs totals
