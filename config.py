@@ -8,3 +8,4 @@ MONGO_HOST = "localhost"
 MONGO_PORT = 9000
 MONGO_USER = "dba"
 MONGO_PWD = "dba"
+MONGO_DB = "test"
