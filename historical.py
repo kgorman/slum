@@ -25,17 +25,13 @@ class profiler( object ):
     db = getattr( self.conn, "admin" )
     db.authenticate( MONGO_USER, MONGO_PWD )
 
-  def get_profiler_data( self, thedate ):
+  def get_profiler_data( self, sdate, edate ):
       
     # get profiler data
     db = getattr( self.conn, MONGO_DB )
   
-    #
-    # kg fixme, need todo rolling window vs totals
-    #
-
     out = db.system.profile.aggregate([
-            {"$match" : { "ts"  : { "$gt" : thedate } } },
+            {"$match" : { "ts"  : { "$gt" : sdate, "$lt" : edate } } },
             {"$group": 
               { "_id" :"$op",
                 "count":{"$sum":1},
@@ -44,7 +40,7 @@ class profiler( object ):
               }
             }
       ])
-  
+
     return out['result']
 
   def put_graphite( self, data, thedate ):
@@ -61,12 +57,13 @@ class profiler( object ):
         lines.append(str)
   
     message = '\n'.join(lines) + '\n' #all lines must end in a newline
-    print "sending message\n"
-    print message
-    print
     
-    # kg todo only perform if len(message) > 0
-    self.sock.sendall(message)
+    if len(message) > 1:
+      print ("sending message to %s for %s\n") % ( CARBON_SERVER, GRAPHITE_PREFIX )
+      print message
+      self.sock.sendall(message)
+    else:
+      print ("no data found\n")
 
   def test_sock(self):
 
@@ -85,20 +82,19 @@ if __name__ == "__main__":
     delay = int( sys.argv[1] )
 
   # initialize starting date
-  prevdate = datetime.datetime.fromtimestamp( time.time() )
+  start = int(time.time()-100)
+  end = int(time.time())
+  prevdate = datetime.datetime.fromtimestamp( start )
+  now = end
 
   p = profiler()
 
   if p.test_sock():
 
-    while True:
-
-      now = int( time.time() )                                    # unix time since epoch
+    for i in range(start,end):
       
-      print "pulling data since %s" % (prevdate)
-      p.put_graphite( p.get_profiler_data(prevdate), now )
-
-      prevdate = datetime.datetime.fromtimestamp(now)             # mongodb datetime
-
-      time.sleep(delay)
-
+      now = datetime.datetime.utcnow()
+      sdate = datetime.datetime.utcfromtimestamp(i)
+      edate = datetime.datetime.utcfromtimestamp(i+1)
+      print "%s: pulling data for %s to %s" % (now, sdate, edate)
+      p.put_graphite( p.get_profiler_data(sdate,edate), i )
