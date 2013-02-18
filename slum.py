@@ -29,10 +29,6 @@ class profiler( object ):
       
     # get profiler data
     db = getattr( self.conn, MONGO_DB )
-  
-    #
-    # kg fixme, need todo rolling window vs totals
-    #
 
     out = db.system.profile.aggregate([
             {"$match" : { "ts"  : { "$gt" : thedate } } },
